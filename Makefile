@@ -3,7 +3,7 @@ FLAGS= -g -Wall
 
 .PHONY: clean all
 
-all: cmp copy encode decode stshell
+all: cmp copy encode decode stshell codecA codecB
 
 cmp: cmp.o
 	$(CC) $(FLAGS) -o $@ $^
