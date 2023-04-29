@@ -3,35 +3,50 @@
 #include <stdbool.h>
 #include <string.h>
 #include <dlfcn.h>
+unsigned char* (*decode)(unsigned char*, size_t);
 
-typedef enum {
-    SUCCESS = 0,
-    FAIL = 1
-} encode_res;
+bool isCCode(char* codec) {
+    return (strcmp(codec, "codecA") == 0 || strcmp(codec, "codecB") == 0);
+}
 
-int main(int argc, char *argv[]) {
+int main(int argc, char** argv) {
+    void* h = NULL;
+    unsigned char* dec = NULL;
+    size_t length = 0;
+
     if (argc != 3) {
-        fprintf(stderr, "Usage: ./decode <codec> <message>\n");
-        return FAIL;
-    }
-    
-    char *method = argv[1];
-    char *message = argv[2];
-    
-    if ( !strcmp(method, "codecA") ) {
-        decodeA(message);
-        printf( "%s\n", message );
+        fprintf(stderr, "Usage: %s <codec type> <text>\n", *(argv));
+        return 1;
     }
 
-    else if ( !strcmp(method, "codecB") ) {
-        decodeB(message);
-        printf( "%s\n", message );
+    if (!isCCode(*(argv + 1))) {
+        fprintf(stderr, "error - decode: illegal code. Must be codecA or codecB.\n");
+        return 1;
     }
 
-    else {
-        fprintf(stderr, "Usage: ./decode <codec> <message>\n");
-        return FAIL;
+    if (!(length = strlen(*(argv + 2)))) {
+        fprintf(stderr, "error - decode: text can't be empty.\n");
+        return 1;
     }
 
-    return SUCCESS;
+    if ((h = dlopen((strcmp( *(argv + 1), "codecA") == 0 ? "./libcodecA.so":"./libcodecB.so"), RTLD_LAZY)) == NULL) {
+        fprintf(stderr, "error - decode: %s\n", dlerror());
+        return 1;
+    }
+
+    if ((dec = decode((unsigned char*)*(argv + 2), length)) == NULL) {
+        fprintf(stderr, "error - decode: malloc failed.\n");
+        return 1;
+    }
+
+    if ((dec = dlsym(h, "decode")) == NULL) {
+        fprintf(stderr, "error - decode: %s\n", dlerror());
+        return 1;
+    }
+
+
+    fprintf(stdout, "%s\n", dec);
+    dlclose(h);
+    free(dec);
+    return 0;
 }

@@ -34,13 +34,13 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    if ((enc = dlsym(h, "encode")) == NULL) {
-        fprintf(stderr, "error - encode: %s\n", dlerror());
+    if ((enc = encode((unsigned char*)*(argv + 2), length)) == NULL) {
+        fprintf(stderr, "error - encode: malloc failed.\n");
         return 1;
     }
 
-    if ((enc = encode((unsigned char*)*(argv + 2), length)) == NULL) {
-        fprintf(stderr, "error - encode: malloc failed.\n");
+     if ((enc = dlsym(h, "encode")) == NULL) {
+        fprintf(stderr, "error - encode: %s\n", dlerror());
         return 1;
     }
 
