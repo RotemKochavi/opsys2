@@ -51,11 +51,9 @@ int main() {
 
 	    argv[i] = NULL;
 
-	    /* Is command empty */ 
 	    if (argv[0] == NULL)
 		    continue;
 
-	    /* for commands not part of the shell command language */ 
 	    if (fork() == 0) { 
 		execvp(argv[0], argv);
 		wait(NULL);
